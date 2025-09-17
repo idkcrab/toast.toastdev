@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webhook Viewer</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input {
+      padding: 8px;
+      width: 60%;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      padding: 8px 12px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #5865f2;
+      color: white;
+      cursor: pointer;
+    }
+    .card {
+      background: #222;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .info {
+      display: flex;
+      align-items: center;
+    }
+    img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 15px;
+    }
+    .delete {
+      background: red;
+    }
+  </style>
+</head>
+<body>
+  <h2>Discord Webhook Viewer</h2>
+  <input type="text" id="webhookInput" placeholder="Enter webhook url">
+  <button onclick="addWebhook()">Add</button>
+  <div id="list"></div>
+
+  <script>
+    async function addWebhook() {
+      const url = document.getElementById('webhookInput').value.trim()
+      if (!url) return
+      try {
+        const res = await fetch(url)
+        if (!res.ok) throw new Error("bad url")
+        const data = await res.json()
+
+        const card = document.createElement('div')
+        card.className = 'card'
+
+        const info = document.createElement('div')
+        info.className = 'info'
+
+        const img = document.createElement('img')
+        img.src = data.avatar ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png` : "https://cdn.discordapp.com/embed/avatars/0.png"
+
+        const name = document.createElement('span')
+        name.textContent = data.name
+
+        info.appendChild(img)
+        info.appendChild(name)
+
+        const delBtn = document.createElement('button')
+        delBtn.textContent = 'Delete'
+        delBtn.className = 'delete'
+        delBtn.onclick = async () => {
+          if (confirm("Really delete this webhook")) {
+            try {
+              const delRes = await fetch(url, { method: 'DELETE' })
+              if (delRes.ok) {
+                card.remove()
+                alert("Webhook deleted")
+              } else {
+                alert("Could not delete webhook")
+              }
+            } catch {
+              alert("Error deleting webhook")
+            }
+          }
+        }
+
+        card.appendChild(info)
+        card.appendChild(delBtn)
+
+        document.getElementById('list').appendChild(card)
+
+      } catch (e) {
+        alert("could not fetch webhook")
+      }
+    }
+  </script>
+</body>
+</html>
